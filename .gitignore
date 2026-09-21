@@ -8,3 +8,17 @@ dist/
 target/
 *.log
 *.tsbuildinfo
+# macOS
+.DS_Store
+
+# Frontend caches and test output
+.vite/
+coverage/
+
+# Local runtime data and backups
+uploads/
+local-data/
+backups/
+*.dump
+*.bak
+*.sql.gz
