@@ -5,6 +5,7 @@
 .idea/
 node_modules/
 dist/
+dist-poc/
 target/
 *.log
 *.tsbuildinfo

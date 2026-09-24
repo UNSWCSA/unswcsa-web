@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev:poc": "vite --config vite.poc.config.mjs",
+    "build:poc": "tsc -p poc/tsconfig.json && vite build --config vite.poc.config.mjs",
+    "test:poc": "node --test poc/server.test.mjs",
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0"

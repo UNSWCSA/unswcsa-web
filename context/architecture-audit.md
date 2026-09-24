@@ -2,9 +2,11 @@
 
 审计日期：2026-09-21
 
+实施边界与收尾状态更新：2026-09-24（保留旧系统盘点，目标架构改为自建 `/admin` + GitHub 内容发布）。
+
 ## 审计结论
 
-当前仓库是一个包含公开官网、用户系统、活动报名、优惠券、餐厅地图、AI 助手、组织管理和数据面板的完整平台。新版只保留轻量官网所需的前端基础，长期内容改由 CMS 提供，普通活动改由独立的 Eventbrite Event Source 提供。旧 Spring Boot 业务后端及其数据库和中间件不进入新版架构。
+当前仓库是一个包含公开官网、用户系统、活动报名、优惠券、餐厅地图、AI 助手、组织管理和数据面板的完整平台。新版只保留轻量官网所需的前端基础，长期内容改由自建 `/admin` 写入 GitHub 并自动构建发布，普通活动改由独立的 Eventbrite Event Source 提供。旧 Spring Boot 业务后端及其数据库和中间件不进入新版架构。
 
 本文件中的分类含义：
 
@@ -29,11 +31,11 @@
 | React Router | 集中定义全部路由 | `KEEP` | 保留路由基础，重建新版公开路由 |
 | `App.tsx` | 同时负责布局、登录状态、退出、后台入口、Toast 和 AI 助手 | `REPLACE` | 重建轻量公共布局、导航和页脚，解除认证与 AI 依赖 |
 | `main.css` | 单一大型样式文件，公共页面与旧业务页面共用 | `REPLACE` | 先提取新版基础样式和品牌 Token；旧模块隔离后再删除遗留样式 |
-| `HomeView` | 调用旧活动 API | `REPLACE` | 按首页范围重建；内容来自 CMS，活动入口来自 Event Source |
-| `AboutView` | 旧静态介绍 | `REPLACE` | 内容迁移到 CMS，并把联系方式放在页面末尾 |
-| `DepartmentsView`、`LeadersView` | 从 `publicContent.ts` 读取静态内容 | `REPLACE` | 合并为“部门与团队”，由 CMS 提供并按自然年归档 |
+| `HomeView` | 调用旧活动 API | `REPLACE` | 按首页范围重建；从 GitHub 已发布内容展示简介和品牌活动入口，不依赖 Event Source |
+| `AboutView` | 旧静态介绍 | `REPLACE` | 内容迁移到内容后台，并把联系方式放在页面末尾 |
+| `DepartmentsView`、`LeadersView` | 从 `publicContent.ts` 读取静态内容 | `REPLACE` | 合并为“部门与团队”，由内容后台提供并按自然年归档 |
 | `ActivitiesView`、`ActivityDetailView` | 依赖旧活动 API、权限和图片上传 | `REPLACE` | 改用独立 Event Source，报名跳转 Eventbrite |
-| `JoinView` | 旧静态招新页面 | `REPLACE` | 改为 CMS 内容，只保留开放和关闭状态 |
+| `JoinView` | 旧静态招新页面 | `REPLACE` | 改为官网内容，只保留开放和关闭状态 |
 | `publicContent.ts` | 部门和负责人硬编码数据 | `REPLACE` | 只作为内容迁移参考，不作为新版长期数据源 |
 | `PageLoading` | 通用加载状态 | `KEEP` | 可继续使用，按新版视觉检查 |
 | `http.ts`、Axios | 统一访问旧 `/api`，自动附加认证 | `REPLACE` | 建立互相独立的 Content Source 和 Event Source；不继承登录拦截器 |
@@ -42,7 +44,7 @@
 | 优惠券页面和管理面板 | 依赖优惠券及登录系统 | `REMOVE` | 第四阶段先停用，第八阶段删除 |
 | 餐厅地图 | 依赖 Leaflet、地图和餐厅 API | `REMOVE` | 同时移除 Leaflet 相关依赖 |
 | AI 助手 | 全局挂载并依赖旧后端 | `REMOVE` | 从新版布局移除 |
-| Admin、Dashboard、RBAC | 依赖认证、组织、活动、优惠券及统计 API | `REMOVE` | CMS 后台不在此 React 应用内重建 |
+| Admin、Dashboard、RBAC | 依赖认证、组织、活动、优惠券及统计 API | `REMOVE` | 独立新建 `/admin` 内容表单，不复用旧 AdminView 或 RBAC |
 
 ### 现有路由处理
 
@@ -53,20 +55,21 @@
 | `/activities`、`/activities/:activityId` | `REPLACE` | 改为 Eventbrite 活动列表和详情展示 |
 | 品牌活动列表及详情 | `REPLACE` | 当前不存在，需要建立稳定路由和 slug 规则 |
 | `/login`、`/forgot-password`、`/profile`、`/my*` | `REMOVE` | 停用后删除 |
-| `/coupons`、`/food-map`、`/admin`、`/dashboard` | `REMOVE` | 停用后删除 |
+| `/coupons`、`/food-map`、`/dashboard` | `REMOVE` | 停用后删除 |
+| `/admin` | `REPLACE` | 隔离旧后台后新建受邀管理层内容入口，不复用旧权限接口 |
 
 ## 后端、API 和基础设施盘点
 
 | 模块 | 主要依赖 | 分类 | 说明 |
 | --- | --- | --- | --- |
-| Activity API | MySQL、缓存、用户和报名 | `REPLACE` | 普通活动改由 Eventbrite；历史代表性内容进入 CMS 品牌活动 |
-| Organization API | MySQL、用户和 RBAC | `REPLACE` | 部门与历届团队改由 CMS 管理，不迁移管理接口 |
-| File API 与 MinIO | 登录、对象存储 | `REPLACE` | CMS 负责长期内容图片；不保留通用上传后端 |
-| Auth、User、JWT、邮件验证码 | MySQL、Redis、SMTP | `REMOVE` | 新版没有站内账号系统 |
+| Activity API | MySQL、缓存、用户和报名 | `REPLACE` | 普通活动改由 Eventbrite；历史代表性内容进入内容后台品牌活动 |
+| Organization API | MySQL、用户和 RBAC | `REPLACE` | 部门与历届团队改由内容后台管理，不迁移管理接口 |
+| File API 与 MinIO | 登录、对象存储 | `REPLACE` | 内容后台负责长期内容图片；不保留通用上传后端 |
+| Auth、User、JWT、邮件验证码 | MySQL、Redis、SMTP | `REMOVE` | 新版没有公众账号系统；受邀管理层使用独立身份验证 |
 | Coupon | MySQL、Redis、RabbitMQ、Caffeine | `REMOVE` | 新版不提供优惠券和抢券业务 |
 | Restaurant、Geo | MySQL、Google Places、Leaflet | `REMOVE` | 新版不提供地图业务 |
 | Assistant | AI API、Redis、认证 | `REMOVE` | 新版不提供 AI 助手 |
-| Dashboard、RBAC、日志和限流 | MySQL、Redis、Sentinel、认证 | `REMOVE` | CMS 使用自身权限，不复刻旧管理系统 |
+| Dashboard、RBAC、日志和限流 | MySQL、Redis、Sentinel、认证 | `REMOVE` | 自建后台使用受邀编辑者访问控制，不复刻旧管理系统 |
 | Health API | Spring Boot | `REMOVE` | 随旧后端退役；新部署按平台提供健康检查 |
 | Spring Boot 应用 | 上述全部模块 | `REMOVE` | 数据确认和新版稳定后在第八阶段退役 |
 | MySQL | 用户、活动、组织、优惠券、餐厅等表 | `REMOVE` | 仅在发现需迁移的真实历史内容时临时读取 |
@@ -79,12 +82,22 @@
 
 数据库迁移包含用户与权限、部门与成员、活动与报名、优惠券、AI FAQ、餐厅与评价等结构。只有活动、部门、团队和历史介绍可能具有内容迁移价值；用户、权限、报名、优惠券和餐厅业务数据不属于新版网站范围。
 
+## 新版内容发布边界
+
+自建 `/admin`、托管身份验证、内容保存接口、GitHub 内容文件和独立图片存储替代外部 CMS 产品。仅管理层登录，不开放公众注册，不恢复旧会员和 RBAC。具体方案见 `admin-publishing-architecture.md`；此为目标架构，尚未实现。
+
+草稿保密方案已确认：使用私有内容存储，预览鉴权，新上传草稿图片受保护。若代码仓库保持公开则使用独立私有内容仓库，具体布局在 PoC 中验证，不自动改变现有仓库可见性。技术部编辑前沟通错开时间，配合简单版本检查，不开发复杂协同编辑。
+
+## 新版活动故障边界
+
+Eventbrite 读取或同步失败时，活动列表和详情显示“活动信息暂时无法加载，请稍后重试”，不能显示“暂无活动”。自动重试或定时同步继续运行，后续成功读取后自动恢复展示，无需手动部署。故障只影响活动列表和详情，不影响首页、团队、品牌活动等官网内容页面的展示与发布。不强制保存最后成功快照，缓存仅为可选优化。恢复间隔及页面恢复方式在 PoC 中验证；不能让 Eventbrite 成功响应成为官网内容页面构建或发布的必要条件。
+
 ## 新旧依赖关系
 
 - 当前 `App.tsx` 使所有公共页面间接依赖认证状态、退出逻辑和 AI 助手；新版布局必须先解除这些依赖。
-- 首页和活动页面直接依赖旧 Activity API；不能在新版中简单复用，应替换为 Event Source。
+- 当前首页和活动页面依赖旧 Activity API；新版首页改用 GitHub 已发布内容及品牌活动入口，普通活动列表和详情改用独立 Event Source。
 - 部门和负责人页面依赖 `publicContent.ts`；其中内容可人工核对后迁移，代码结构不保留。
-- 旧活动管理依赖通用文件上传、认证和权限；品牌活动应由 CMS 独立管理，不能复用这套接口。
+- 旧活动管理依赖通用文件上传、认证和权限；品牌活动应由内容后台独立管理，不能复用这套接口。
 - `main.css` 同时覆盖新旧页面；第四阶段只能逐步隔离，不能在新版骨架建立前整体删除。
 - Nginx 将 `/api` 代理到 Spring Boot；数据源替换完成后需要重做部署配置。
 
@@ -130,8 +143,8 @@
 
 ## 第一阶段收尾条件
 
-技术审计、模块分类、依赖确认、旧系统归档和资产分类已经完成。第一阶段正式关闭前还需：
+技术审计、模块分类、依赖确认、旧系统归档和资产分类已经完成，可进入第二阶段。状态与持续待办如下：
 
-1. 提交并推送本审计文档及相应的项目状态更新；新版背景资料和品牌资产已通过 `b4af49b` 推送到 `origin/main`。
-2. 尽可能向旧负责人确认是否存在未记录的远程部署；没有时把数据导出项正式记为“不适用”。
+1. 审计已提交为 `d321c46`，背景资料和品牌资产已提交为 `b4af49b`。2026-09-23 本地检查中 `main` 和 `origin/main` 跟踪记录均指向 `d321c46`，未联网刷新远端。
+2. 继续向旧负责人确认是否存在未记录的远程部署；确认没有时把导出项记为“不适用”。该待办不阻止需求冻结和 PoC，但必须在旧系统退役前解决，未确认的服务和数据不得关闭或删除。
 3. 将缺失品牌资料保留为明确待办；取得正式资料后再补充，不自行生成替代品。

@@ -1,5 +1,7 @@
 # JMeter API 测试计划
 
+> 文档范围（2026-09-24）：本文保留旧完整平台的说明、规划或历史记录，不作为新版需求及实施进度依据。新版以 [context 文档入口](../context/README.md) 为准，六个页面方案已确认；第二阶段需求冻结已完成；新版采用自建 /admin、GitHub 内容文件与自动构建发布，Eventbrite 独立提供活动，草稿私有保存、预览和未发布新图片受保护，下一步进行数据源 PoC；最新进度见 context/project-status.md。
+
 本文档用于配置 JMeter 压力测试 / QPS 测试。所有接口路径基于当前后端实际 Controller。
 
 基础地址：

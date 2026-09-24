@@ -133,6 +133,7 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 - 合作伙伴 Logo 放入统一尺寸的容器并保持原比例。
 - 图片不得拉伸变形。
 - 图片上传时应检查尺寸并自动压缩。
+- 新上传未发布图片默认受保护，登录后预览，发布时再开放对应版本；已公开的正式品牌素材无需重新私有化。图片权限规则见 `admin-publishing-architecture.md`。
 - 有信息价值的图片必须提供简短准确的替代文字。
 - 同一模块不混用明显不同的滤镜、色温和处理风格。
 
@@ -152,7 +153,7 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 ## 社交媒体
 
 - 官方社交入口包括 Instagram、小红书、微信公众号、抖音和 Eventbrite。
-- 社交平台名称、账号和链接由 CMS 的网站设置管理。
+- 社交平台名称、账号和链接由内容后台的网站设置管理。
 - 网页优先提供可点击链接。
 - 二维码只作为补充，不作为唯一访问方式。
 - 不从截图中提取、复制或重新生成二维码。
@@ -171,7 +172,7 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 
 ## 时效性内容
 
-以下内容属于 CMS 数据，不是永久品牌规则：
+以下内容属于内容后台数据，不是永久品牌规则：
 
 - 每年举办的活动数量。
 - 团队和成员规模。
