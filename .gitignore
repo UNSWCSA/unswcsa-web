@@ -6,6 +6,12 @@
 node_modules/
 dist/
 dist-poc/
+dist-admin/
+dist-site/
+.wrangler/
+.dev.vars*
+wrangler.local.toml
+*.pem
 target/
 *.log
 *.tsbuildinfo

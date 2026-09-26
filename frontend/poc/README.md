@@ -37,6 +37,8 @@ npm run build:poc
 
 ## 下一步
 
+云端接入实现已新增于 `../../cloud/`，详见其 README；本目录仍只运行本地测试接口。真实 Cloudflare 登录、GitHub 发布和 Eventbrite 验收尚未完成，不将新增代码误记为已上线。
+
 优先使用现有 React、GitHub 私有内容仓库、Cloudflare Access / Workers / Pages 和 GitHub Actions 的免费额度。图片阶段再评估 R2（超出免费额度会计费），本轮不启用付费服务。
 
 将 `api.ts` 中的本地适配层接到 Workers；替换本地登录为受邀邮箱验证，同时验证服务端权限；接入 GitHub App、私有草稿、指定版本构建与最终部署状态。独立开展真实 Eventbrite 读取及失败自动恢复验证。这些均未在本轮实现。

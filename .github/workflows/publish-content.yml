@@ -1,0 +1,78 @@
+name: Publish website content
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('content-{0}', inputs.release_id) || format('code-{0}', github.sha) }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_id:
+        description: Release UUID from the private content repository
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths: ['frontend/**', 'cloud/**', '.github/workflows/publish-content.yml']
+
+permissions:
+  contents: read
+
+# All code and content deploys share one queue. Never interrupt an upload.
+concurrency:
+  group: csa-public-site
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Explicit setup switch: merely pushing this workflow cannot deploy a site.
+    if: vars.CSA_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CONTENT_REPO: ${{ vars.CONTENT_REPO }}
+      CONTENT_BRANCH: ${{ vars.CONTENT_BRANCH }}
+      CODE_REPO: ${{ github.repository }}
+      CODE_BRANCH: main
+      PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN }}
+      RELEASE_KIND: ${{ github.event_name }}
+      RELEASE_ID: ${{ inputs.release_id }}
+      GITHUB_APP_ID: ${{ vars.CONTENT_APP_ID }}
+      GITHUB_INSTALLATION_ID: ${{ vars.CONTENT_APP_INSTALLATION_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            cloud/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm ci
+        working-directory: cloud
+      - run: npm test
+        working-directory: cloud
+      - run: npm run build:cloud-public
+        working-directory: frontend
+        env:
+          VITE_ADMIN_ORIGIN: ${{ vars.ADMIN_ORIGIN }}
+          VITE_PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN }}
+      - name: Prepare only the selected public content
+        run: node cloud/scripts/release.mjs prepare
+        env:
+          GITHUB_PRIVATE_KEY: ${{ secrets.CONTENT_APP_PRIVATE_KEY }}
+      - name: Reject stale code or superseded content
+        run: node cloud/scripts/release.mjs guard
+        env:
+          GITHUB_PRIVATE_KEY: ${{ secrets.CONTENT_APP_PRIVATE_KEY }}
+      - name: Deploy static site
+        if: env.CSA_ALREADY_LIVE != 'true'
+        working-directory: cloud
+        run: npx --no-install wrangler pages deploy ../frontend/dist-site --project-name "$PAGES_PROJECT" --branch main
+        env:
+          PAGES_PROJECT: ${{ vars.PAGES_PROJECT }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_TOKEN }}
+      - name: Verify deployed version
+        run: node cloud/scripts/release.mjs verify

@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:cloud-admin": "tsc -p cloud/tsconfig.json && vite build --config vite.cloud.config.mjs --mode admin",
+    "build:cloud-public": "tsc -p cloud/tsconfig.json && vite build --config vite.cloud.config.mjs --mode public",
     "dev:poc": "vite --config vite.poc.config.mjs",
     "build:poc": "tsc -p poc/tsconfig.json && vite build --config vite.poc.config.mjs",
     "test:poc": "node --test poc/server.test.mjs",

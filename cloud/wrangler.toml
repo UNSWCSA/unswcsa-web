@@ -1,0 +1,19 @@
+name = "csa-content-admin"
+main = "src/worker.mjs"
+compatibility_date = "2026-09-24"
+workers_dev = true
+preview_urls = false
+keep_vars = true
+
+[assets]
+directory = "../frontend/dist-admin"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = true
+
+# Configure deployment-specific values in the dashboard, or an ignored local
+# wrangler.local.toml copied from this file. Do not put secrets in this file.
+# Required variables: ACCESS_ISSUER, ACCESS_AUD, ADMIN_ORIGIN, PUBLIC_ORIGIN,
+# CONTENT_REPO, CONTENT_BRANCH, CODE_REPO, CODE_BRANCH, GITHUB_APP_ID,
+# GITHUB_INSTALLATION_ID.
+# Secrets: GITHUB_PRIVATE_KEY (PKCS#8 PEM), ALLOWED_EMAILS (comma-separated).
