@@ -12,7 +12,7 @@ export default {
         throw new Error(diagnostic)
       }
       // Build a fresh request so visitor cookies and authorization are never forwarded.
-      const upstream = await env.EVENTS.fetch('https://csa-events.unswcsa-exec.workers.dev/api/events', { signal: AbortSignal.timeout(25000), redirect: 'error' })
+      const upstream = await env.EVENTS.fetch('https://csa-events.unswcsa-exec.workers.dev/api/events', { signal: AbortSignal.timeout(25000), redirect: 'manual' })
       if (!upstream.ok) {
         diagnostic = `EVENTS_HTTP_${upstream.status}`
         throw new Error(diagnostic)

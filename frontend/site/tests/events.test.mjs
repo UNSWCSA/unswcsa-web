@@ -40,6 +40,7 @@ test('production proxy uses service binding and never forwards visitor credentia
   const env = { EVENTS: { async fetch(url, options) {
     assert.equal(url, 'https://csa-events.unswcsa-exec.workers.dev/api/events')
     assert.equal(options.headers, undefined)
+    assert.equal(options.redirect, 'manual')
     return Response.json({ events: [] })
   } } }
   const response = await worker.fetch(new Request('https://preview.test/api/events?target=evil', { headers: { Cookie: 'private', Authorization: 'Bearer private' } }), env)
