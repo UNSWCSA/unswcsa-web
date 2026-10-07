@@ -31,7 +31,7 @@
 | React Router | 集中定义全部路由 | `KEEP` | 保留路由基础，重建新版公开路由 |
 | `App.tsx` | 同时负责布局、登录状态、退出、后台入口、Toast 和 AI 助手 | `REPLACE` | 重建轻量公共布局、导航和页脚，解除认证与 AI 依赖 |
 | `main.css` | 单一大型样式文件，公共页面与旧业务页面共用 | `REPLACE` | 先提取新版基础样式和品牌 Token；旧模块隔离后再删除遗留样式 |
-| `HomeView` | 调用旧活动 API | `REPLACE` | 按首页范围重建；从 GitHub 已发布内容展示简介和品牌活动入口，不依赖 Event Source |
+| `HomeView` | 调用旧活动 API | `REPLACE` | 按首页范围重建；从 GitHub 已发布内容展示简介和大合照，不依赖 Event Source |
 | `AboutView` | 旧静态介绍 | `REPLACE` | 内容迁移到内容后台，并把联系方式放在页面末尾 |
 | `DepartmentsView`、`LeadersView` | 从 `publicContent.ts` 读取静态内容 | `REPLACE` | 合并为“部门与团队”，由内容后台提供并按自然年归档 |
 | `ActivitiesView`、`ActivityDetailView` | 依赖旧活动 API、权限和图片上传 | `REPLACE` | 改用独立 Event Source，报名跳转 Eventbrite |
@@ -52,8 +52,7 @@
 | --- | --- | --- |
 | `/`、`/about`、`/join` | `REPLACE` | 使用新版页面替换 |
 | `/departments`、`/leaders` | `REPLACE` | 合并为部门与团队页面，并为旧路径决定重定向 |
-| `/activities`、`/activities/:activityId` | `REPLACE` | 改为 Eventbrite 活动列表和详情展示 |
-| 品牌活动列表及详情 | `REPLACE` | 当前不存在，需要建立稳定路由和 slug 规则 |
+| `/activities`、`/activities/:activityId` | `REPLACE` | 改为 Eventbrite 活动列表展示 |
 | `/login`、`/forgot-password`、`/profile`、`/my*` | `REMOVE` | 停用后删除 |
 | `/coupons`、`/food-map`、`/dashboard` | `REMOVE` | 停用后删除 |
 | `/admin` | `REPLACE` | 隔离旧后台后新建受邀管理层内容入口，不复用旧权限接口 |
@@ -62,7 +61,7 @@
 
 | 模块 | 主要依赖 | 分类 | 说明 |
 | --- | --- | --- | --- |
-| Activity API | MySQL、缓存、用户和报名 | `REPLACE` | 普通活动改由 Eventbrite；历史代表性内容进入内容后台品牌活动 |
+| Activity API | MySQL、缓存、用户和报名 | `REPLACE` | 普通活动改由 Eventbrite；官网不另外维护活动内容 |
 | Organization API | MySQL、用户和 RBAC | `REPLACE` | 部门与历届团队改由内容后台管理，不迁移管理接口 |
 | File API 与 MinIO | 登录、对象存储 | `REPLACE` | 内容后台负责长期内容图片；不保留通用上传后端 |
 | Auth、User、JWT、邮件验证码 | MySQL、Redis、SMTP | `REMOVE` | 新版没有公众账号系统；受邀管理层使用独立身份验证 |
@@ -90,14 +89,14 @@
 
 ## 新版活动故障边界
 
-Eventbrite 读取或同步失败时，活动列表和详情显示“活动信息暂时无法加载，请稍后重试”，不能显示“暂无活动”。自动重试或定时同步继续运行，后续成功读取后自动恢复展示，无需手动部署。故障只影响活动列表和详情，不影响首页、团队、品牌活动等官网内容页面的展示与发布。不强制保存最后成功快照，缓存仅为可选优化。恢复间隔及页面恢复方式在 PoC 中验证；不能让 Eventbrite 成功响应成为官网内容页面构建或发布的必要条件。
+Eventbrite 读取或同步失败时，活动列表显示“活动信息暂时无法加载，请稍后重试”，不能显示“暂无活动”。自动重试或定时同步继续运行，后续成功读取后自动恢复展示，无需手动部署。故障只影响活动列表，不影响首页、团队等官网内容页面的展示与发布。不强制保存最后成功快照，缓存仅为可选优化。恢复间隔及页面恢复方式在 PoC 中验证；不能让 Eventbrite 成功响应成为官网内容页面构建或发布的必要条件。
 
 ## 新旧依赖关系
 
 - 当前 `App.tsx` 使所有公共页面间接依赖认证状态、退出逻辑和 AI 助手；新版布局必须先解除这些依赖。
-- 当前首页和活动页面依赖旧 Activity API；新版首页改用 GitHub 已发布内容及品牌活动入口，普通活动列表和详情改用独立 Event Source。
+- 当前首页和活动页面依赖旧 Activity API；新版首页改用 GitHub 已发布内容及大合照，普通活动列表改用独立 Event Source。
 - 部门和负责人页面依赖 `publicContent.ts`；其中内容可人工核对后迁移，代码结构不保留。
-- 旧活动管理依赖通用文件上传、认证和权限；品牌活动应由内容后台独立管理，不能复用这套接口。
+- 旧活动管理依赖通用文件上传、认证和权限；新版活动由 Eventbrite 管理，不能复用这套接口。
 - `main.css` 同时覆盖新旧页面；第四阶段只能逐步隔离，不能在新版骨架建立前整体删除。
 - Nginx 将 `/api` 代理到 Spring Boot；数据源替换完成后需要重做部署配置。
 

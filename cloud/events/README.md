@@ -56,3 +56,5 @@ npm run deploy:events
 - 待实现/设计：React Event Source 与六页官网整合、详情 SEO/分享方案；该原生 JS 测试页不是正式官网。
 
 故障演练可在页面骨架之后集中完成，但正式上线前要补齐；已知凭据或隐私问题立即处理。项目仍处于 Step 3，不把云端展示成功等同于完整 PoC 验收。
+
+2026-10-05：新版 React 全部活动已通过同源代理接入本 Worker 的公开列表接口，详见 `../../frontend/site/README.md`。本站原生 JS PoC 与详情端点保留，新官网不使用站内详情。本轮未部署或修改本 Worker。

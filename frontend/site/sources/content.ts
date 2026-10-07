@@ -56,16 +56,6 @@ export interface TeamYear {
   members: Array<{ name: string; role: string; photo: ImageReference | null }>
 }
 
-export interface BrandEvent {
-  /** Stable content identifier; no public detail route. */
-  slug: string
-  title: string
-  summary: string
-  cover: ImageReference | null
-  /** Verified Eventbrite event URL; null leaves the card without a link. */
-  eventbriteUrl: string | null
-}
-
 export interface JoinContent {
   reasons: string[]
   departmentIds: string[]
@@ -95,8 +85,6 @@ export interface PublishedContent {
   departments: Department[]
   currentTeamYear: number | null
   teams: TeamYear[]
-  /** Published, completed representative events only, in display order. */
-  brandEvents: BrandEvent[]
   join: JoinContent | null
 }
 

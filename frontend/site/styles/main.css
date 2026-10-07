@@ -642,3 +642,20 @@ select:focus-visible,summary:focus-visible { outline:3px solid var(--brand-red);
   .year-switch button { padding:10px 18px; }
   .member-card { gap:24px; }
 }
+.event-photo { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; }
+.event-grid .content-card { min-width:0; overflow-wrap:anywhere; }
+.event-grid .card-title a { color:var(--brand-navy); text-decoration:none; }
+.event-grid .card-title a:hover { text-decoration:underline; }
+.filter-notice .filter-reset { margin-left:16px; }
+.event-badge.status-upcoming { background:var(--brand-red); color:white; }
+.event-badge.status-ongoing { background:var(--brand-blue); color:white; }
+.event-badge.status-ended { background:#526071; color:white; }
+.event-badge.status-cancelled { background:#8a3643; color:white; }
+
+.event-cover .photo-slot { aspect-ratio:16/9; }
+.history-list { list-style:none; padding:0; }
+.history-list li { display:flex; align-items:baseline; gap:28px; padding:18px 0; border-bottom:1px solid var(--line); }
+.history-list strong { color:var(--brand-navy); font-size:1.3rem; }
+.history-list p { margin:0; }
+.member-card > div:last-child { min-width:0; overflow-wrap:anywhere; }
+.department-grid h3 { margin-bottom:16px; }
