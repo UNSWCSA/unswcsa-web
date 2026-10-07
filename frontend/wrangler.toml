@@ -1,0 +1,6 @@
+# New public site only. Cloudflare Pages root directory must be frontend.
+name = "unswcsa-web"
+pages_build_output_dir = "./dist-site-preview"
+compatibility_date = "2026-10-07"
+# Route the public csa-events Worker request through Cloudflare's public edge.
+compatibility_flags = ["global_fetch_strictly_public"]
