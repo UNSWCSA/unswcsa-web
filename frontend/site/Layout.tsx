@@ -14,7 +14,7 @@ export default function Layout() {
     document.title = `${title} · 新南学联`
     if (previous.current !== location.pathname) {
       window.scrollTo(0, 0)
-      main.current?.focus()
+      main.current?.focus({ preventScroll: true })
       previous.current = location.pathname
     }
   }, [location.pathname])
