@@ -3,11 +3,10 @@ export const navigation = [
   { path: '/team', label: '部门与团队' },
   { path: '/activities', label: '全部活动' }, { path: '/join', label: '加入我们' },
 ]
-// Destinations await verification; do not substitute generic platform homepages.
+// Official QR images supplied for scanning or saving; no account URLs required.
 export const socials = [
-  { name: 'Instagram' },
-  { name: '小红书' },
-  { name: '微信公众号' },
-  { name: '抖音' },
-  { name: 'Eventbrite' },
+  { name: 'Instagram', qr: '/brand/social/Insta.png' },
+  { name: '小红书', qr: '/brand/social/RedNot.png' },
+  { name: '微信公众号', qr: '/brand/social/WeChat.png' },
+  { name: '抖音', qr: '/brand/social/Tiktok.png' },
 ]

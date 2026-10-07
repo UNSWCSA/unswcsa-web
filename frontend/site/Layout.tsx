@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { navigation, socials } from './config'
+import { navigation } from './config'
 
 export default function Layout() {
   const [open, setOpen] = useState(false)
@@ -35,7 +35,7 @@ export default function Layout() {
         <div><p className="footer-name">新南学联</p><p className="footer-abbreviation">UNSWCSA</p><p className="official-name">新南威尔士大学中国学生学者联谊会<br />University of New South Wales Chinese Student Association</p></div>
         <nav className="footer-nav" aria-label="页脚导航">{navigation.slice(1).map(item => <Link key={item.path} to={item.path}>{item.label}</Link>)}</nav>
       </div>
-      <div className="container footer-bottom"><div className="footer-socials">{socials.map(item => <span key={item.name}>{item.name}</span>)}</div><p>官方邮箱及社交链接待确认</p><p>© {new Date().getFullYear()} UNSWCSA · 开发预览</p></div>
+      <div className="container footer-bottom"><p>© {new Date().getFullYear()} UNSWCSA </p></div>
     </footer>
   </>
 }
