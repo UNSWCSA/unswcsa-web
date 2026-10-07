@@ -2,5 +2,7 @@
 name = "unswcsa-web"
 pages_build_output_dir = "./dist-site-preview"
 compatibility_date = "2026-10-07"
-# Route the public csa-events Worker request through Cloudflare's public edge.
-compatibility_flags = ["global_fetch_strictly_public"]
+# Call the existing read-only events Worker directly, without public routing.
+[[services]]
+binding = "EVENTS"
+service = "csa-events"

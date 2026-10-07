@@ -36,20 +36,22 @@ test('source failure is not empty; a later request recovers; cancellation propag
     await assert.rejects(eventSource.readEvents({ signal: AbortSignal.abort() }))
   } finally { globalThis.fetch = original }
 })
-test('production proxy uses fixed public URL and does not forward browser credentials', async () => {
-  const original = globalThis.fetch
-  try {
-    globalThis.fetch = async (url, options) => {
-      assert.equal(url, 'https://csa-events.unswcsa-exec.workers.dev/api/events')
-      assert.equal(options.headers, undefined)
-      return Response.json({ events: [] })
-    }
-    const response = await worker.fetch(new Request('https://preview.test/api/events?target=evil', { headers: { Cookie: 'private' } }), {})
-    assert.equal(response.status, 200)
-    assert.deepEqual(await response.json(), { events: [] })
-    globalThis.fetch = async () => new Response('private failure detail', { status: 503 })
-    const failed = await worker.fetch(new Request('https://preview.test/api/events'), {})
-    assert.equal(failed.status, 503)
-    assert.equal((await failed.text()).includes('private failure detail'), false)
-  } finally { globalThis.fetch = original }
+test('production proxy uses service binding and never forwards visitor credentials', async () => {
+  const env = { EVENTS: { async fetch(url, options) {
+    assert.equal(url, 'https://csa-events.unswcsa-exec.workers.dev/api/events')
+    assert.equal(options.headers, undefined)
+    return Response.json({ events: [] })
+  } } }
+  const response = await worker.fetch(new Request('https://preview.test/api/events?target=evil', { headers: { Cookie: 'private', Authorization: 'Bearer private' } }), env)
+  assert.equal(response.status, 200)
+  assert.deepEqual(await response.json(), { events: [] })
+  env.EVENTS.fetch = async () => new Response('private failure detail', { status: 503 })
+  const failed = await worker.fetch(new Request('https://preview.test/api/events'), env)
+  assert.equal(failed.status, 503)
+  assert.equal((await failed.text()).includes('private failure detail'), false)
+  const missing = await worker.fetch(new Request('https://preview.test/api/events'), {})
+  assert.equal(missing.status, 503)
+  assert.equal((await worker.fetch(new Request('https://preview.test/api/events', { method: 'POST' }), {})).status, 405)
+  const asset = await worker.fetch(new Request('https://preview.test/team'), { ASSETS: { fetch: async () => new Response('page') } })
+  assert.equal(await asset.text(), 'page')
 })
